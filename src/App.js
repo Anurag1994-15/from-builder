@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import { Form, TextField, SelectField, SubmitButton,NumberField } from './components/FormElements';
+import { Form, TextField, SelectField, SubmitButton,NumberField,DatePickerField } from './components/FormElements';
 import * as Yup from 'yup';
+
 
 const formSchema = {
     name: {
@@ -14,6 +15,11 @@ const formSchema = {
       label: "Phone Number",
       required: true
   },
+  dob: {
+    type: "date",
+    label: "DOB",
+    required: true
+},
     email: {
         type: "email",
         label: "Email",
@@ -61,7 +67,16 @@ function App() {
             else if(formSchema[key].type === "number"){
               _validationSchema[key] = Yup.string().length(10,"max 10 digit");
           }
-
+          else if(formSchema[key].type === "date"){
+            _validationSchema[key] = Yup.date().nullable()
+            .test('dob', 'Should be greater than 18', function (value, ctx) {
+              const dob = new Date(value);
+              const validDate = new Date();
+              const valid = validDate.getFullYear() - dob.getFullYear() >= 18;
+              return !valid ? ctx.createError() : valid; 
+            })
+            .required('Required')
+        }
             if(formSchema[key].required){
                 _validationSchema[key] = _validationSchema[key].required('This field is required');
             }
@@ -89,6 +104,9 @@ function App() {
         if (elementSchema.type === "number") {
           return <NumberField  {...props} />
       }
+      if (elementSchema.type === "date") {
+      return <DatePickerField name="date" {...props} />
+    }
 
     }
 
